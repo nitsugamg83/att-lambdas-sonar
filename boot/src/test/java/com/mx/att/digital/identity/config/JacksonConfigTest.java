@@ -2,7 +2,6 @@ package com.mx.att.digital.identity.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.mx.att.digital.identity.config.JacksonConfig;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
