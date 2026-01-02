@@ -27,21 +27,7 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} - %msg%n"
 
-orchestrator:
-  base-url: "${ORCH_BASE_URL:https://localhost:9443/orchestrator}"
-  timeouts:
-    connect-ms: ${ORCH_CONNECT_MS:3000}
-    read-ms: ${ORCH_READ_MS:5000}
-  security:
-    type: "${ORCH_SECURITY_TYPE:none}"   # none|basic|bearer
-    basic:
-      username: "${ORCH_USER:}"
-      password: "${ORCH_PASS:}"
-    bearer:
-      token: "${ORCH_BEARER_TOKEN:}"
-  headers:
-    Accept: "application/json"
-    Content-Type: "application/json"
+
 
 aws:
   region: "${AWS_REGION:mx-central-1}"
