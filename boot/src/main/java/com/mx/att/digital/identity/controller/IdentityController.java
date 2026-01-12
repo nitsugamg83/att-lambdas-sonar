@@ -2,6 +2,7 @@ package com.mx.att.digital.identity.controller;
 
 import jakarta.validation.Valid;
 
+import com.mx.att.digital.identity.client.OrchestratorClient;
 import com.mx.att.digital.identity.model.ApiResponse;
 import com.mx.att.digital.identity.model.MdnValidateData;
 import com.mx.att.digital.identity.model.MdnValidateRequest;
@@ -20,6 +21,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +31,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class IdentityController {
+
+  private static final Logger log = LoggerFactory.getLogger(IdentityController.class);
+
 
   private final IdentityService service;
   public IdentityController(IdentityService service) { this.service = service; }
@@ -52,7 +58,10 @@ public class IdentityController {
   )
   @PostMapping(path = "/session/init", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ApiResponse<SessionInitData>> sessionInit(@Valid @RequestBody SessionInitRequest req) {
-    return ResponseEntity.ok(service.sessionInit(req));
+    log.info("Llamada a /session/init req{}",req);
+    ApiResponse<SessionInitData> response = service.sessionInit(req);
+    log.info("response en /session/init res{}",response);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(

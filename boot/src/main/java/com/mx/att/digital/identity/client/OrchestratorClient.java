@@ -119,8 +119,10 @@ public class OrchestratorClient {
       Map<String, Object> payload = new HashMap<>();
       payload.put("operation", operation);
       payload.put("request", requestBody);
+      
       return mapper.writeValueAsString(payload);
     } catch (Exception ex) {
+
       throw new OrchestratorClientException(
           "No se pudo serializar payload para Lambda (op=" + operation + ", arn=" + functionArn + "): " + ex.getMessage(),
           ex
