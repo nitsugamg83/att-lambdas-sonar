@@ -1,8 +1,6 @@
 package com.mx.att.digital.identity.controller;
 
 import jakarta.validation.Valid;
-
-import com.mx.att.digital.identity.client.OrchestratorClient;
 import com.mx.att.digital.identity.model.ApiResponse;
 import com.mx.att.digital.identity.model.InitAuthData;
 import com.mx.att.digital.identity.model.InitAuthRequest;
@@ -18,12 +16,17 @@ import com.mx.att.digital.identity.model.SessionInitData;
 import com.mx.att.digital.identity.model.SessionInitLinesData;
 import com.mx.att.digital.identity.model.SessionInitLinesRequest;
 import com.mx.att.digital.identity.model.SessionInitRequest;
+import com.mx.att.digital.identity.model.ValidateCustomerData;
 import com.mx.att.digital.identity.service.IdentityService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import com.mx.att.digital.identity.model.ValidateCustomerRequest;
+import com.mx.att.digital.identity.model.ApprovalRequest;
+import com.mx.att.digital.identity.model.AprovalResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

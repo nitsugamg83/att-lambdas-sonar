@@ -2,16 +2,11 @@ package com.mx.att.digital.identity.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mx.att.digital.identity.model.ApiResponse;
-import com.mx.att.digital.identity.model.InitAuthData;
-import com.mx.att.digital.identity.model.InitAuthRequest;
-import com.mx.att.digital.identity.model.MdnValidateData;
-import com.mx.att.digital.identity.model.MdnValidateRequest;
-import com.mx.att.digital.identity.model.OtpRequest;
-import com.mx.att.digital.identity.model.OtpRequestData;
-import com.mx.att.digital.identity.model.OtpValidateRequest;
-import com.mx.att.digital.identity.model.SessionInitLinesData;
-import com.mx.att.digital.identity.model.SessionInitLinesRequest;
+import com.mx.att.digital.identity.model.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
