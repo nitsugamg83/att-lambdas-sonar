@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 
 import com.mx.att.digital.identity.client.OrchestratorClient;
 import com.mx.att.digital.identity.model.ApiResponse;
+import com.mx.att.digital.identity.model.InitAuthData;
+import com.mx.att.digital.identity.model.InitAuthRequest;
 import com.mx.att.digital.identity.model.MdnValidateData;
 import com.mx.att.digital.identity.model.MdnValidateRequest;
 import com.mx.att.digital.identity.model.OtpForwardData;
@@ -13,6 +15,8 @@ import com.mx.att.digital.identity.model.OtpRequestData;
 import com.mx.att.digital.identity.model.OtpValidateData;
 import com.mx.att.digital.identity.model.OtpValidateRequest;
 import com.mx.att.digital.identity.model.SessionInitData;
+import com.mx.att.digital.identity.model.SessionInitLinesData;
+import com.mx.att.digital.identity.model.SessionInitLinesRequest;
 import com.mx.att.digital.identity.model.SessionInitRequest;
 import com.mx.att.digital.identity.service.IdentityService;
 
@@ -87,6 +91,9 @@ public class IdentityController {
     return ResponseEntity.ok(service.mdnValidate(req));
   }
 
+
+  
+
   @Operation(
       summary = "Solicita OTP",
       description = "Genera y envía un OTP al canal configurado.",
@@ -155,4 +162,51 @@ public class IdentityController {
   public ResponseEntity<ApiResponse<OtpForwardData>> otpForward(@Valid @RequestBody OtpForwardRequest req) {
     return ResponseEntity.ok(service.otpForward(req));
   }
+
+  @Operation(
+      summary = "Session Init Lines ",
+      description = "Inicializa una nueva sesion biometrica cuaneo el usuario alcanza el portal web de identidad",
+      responses = {
+          @io.swagger.v3.oas.annotations.responses.ApiResponse(
+              responseCode = "200",
+              description = "Sesion inicializada",
+              content = @Content(schema = @Schema(implementation = ApiResponse.class))
+          ),
+          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud inválida"),
+          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autorizado"),
+          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Error interno")
+      }
+  )
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
+      content = @Content(schema = @Schema(implementation = SessionInitLinesRequest.class))
+  )
+  @PostMapping(path = "/session/initLines", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ApiResponse<SessionInitLinesData>> sessionInitLines(@Valid @RequestBody SessionInitLinesRequest req) {
+    return ResponseEntity.ok(service.sessionInitLines(req));
+  }
+
+  @Operation(
+    summary = "Init Auth",
+    description = "Inicializa el Incode webflow para el proceso de autenticación.",
+    responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Flujo inicializado",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud inválida"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autorizado"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Error interno")
+    }
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        required = true,
+        content = @Content(schema = @Schema(implementation = InitAuthRequest.class))
+    )
+    @PostMapping(path = "/initAuth", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<InitAuthData>> initAuth(@Valid @RequestBody InitAuthRequest req) {
+        return ResponseEntity.ok(service.initAuth(req));
+    }
+
 }

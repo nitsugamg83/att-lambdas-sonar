@@ -225,4 +225,106 @@ class IdentityServiceImplTest {
     verify(client).otpForward(null);
     verifyNoMoreInteractions(client);
   }
+  @Test
+void sessionInitLines_delegates_to_client_with_req() {
+  SessionInitLinesRequest req = new SessionInitLinesRequest(null, null, null, null);
+
+  ApiResponse<SessionInitLinesData> expected =
+      new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
+
+  when(client.sessionInitLines(req)).thenReturn(expected);
+
+  ApiResponse<SessionInitLinesData> out = service.sessionInitLines(req);
+
+  assertThat(out).isSameAs(expected);
+  verify(client).sessionInitLines(req);
+  verifyNoMoreInteractions(client);
+}
+
+@Test
+void sessionInitLines_delegates_to_client_with_null_req() {
+  ApiResponse<SessionInitLinesData> expected =
+      new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
+
+  when(client.sessionInitLines(null)).thenReturn(expected);
+
+  ApiResponse<SessionInitLinesData> out = service.sessionInitLines(null);
+
+  assertThat(out).isSameAs(expected);
+  verify(client).sessionInitLines(null);
+  verifyNoMoreInteractions(client);
+}
+
+@Test
+void sessionInitLines_whenStatusError_throwsWithExpectedCode() {
+  ApiResponse<SessionInitLinesData> error =
+      new ApiResponse<>("ERROR", null, null, OffsetDateTime.now());
+
+  when(client.sessionInitLines(null)).thenReturn(error);
+
+  assertThatThrownBy(() -> service.sessionInitLines(null))
+      .isInstanceOf(OrchestratorClientException.class)
+      .satisfies(ex -> {
+        OrchestratorClientException oce = (OrchestratorClientException) ex;
+        assertThat(oce.status).isEqualTo("ERROR");
+        assertThat(oce.errCode).isEqualTo("SESSION_INIT_LINES_ERROR");
+        assertThat(oce.getMessage()).isEqualTo("sessionInitLines returned ERROR");
+        assertThat(oce.timestamp).isNotNull();
+      });
+
+  verify(client).sessionInitLines(null);
+  verifyNoMoreInteractions(client);
+}
+
+  @Test
+  void initAuth_delegates_to_client_with_req() {
+    InitAuthRequest req = new InitAuthRequest(null, null, null, null, null, null, null);
+
+    ApiResponse<InitAuthData> expected =
+        new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
+
+    when(client.initAuth(req)).thenReturn(expected);
+
+    ApiResponse<InitAuthData> out = service.initAuth(req);
+
+    assertThat(out).isSameAs(expected);
+    verify(client).initAuth(req);
+    verifyNoMoreInteractions(client);
+  }
+
+  @Test
+  void initAuth_delegates_to_client_with_null_req() {
+    ApiResponse<InitAuthData> expected =
+        new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
+
+    when(client.initAuth(null)).thenReturn(expected);
+
+    ApiResponse<InitAuthData> out = service.initAuth(null);
+
+    assertThat(out).isSameAs(expected);
+    verify(client).initAuth(null);
+    verifyNoMoreInteractions(client);
+  }
+
+  @Test
+  void initAuth_whenStatusError_throwsWithExpectedCode() {
+    ApiResponse<InitAuthData> error =
+        new ApiResponse<>("ERROR", null, null, OffsetDateTime.now());
+
+    when(client.initAuth(null)).thenReturn(error);
+
+    assertThatThrownBy(() -> service.initAuth(null))
+        .isInstanceOf(OrchestratorClientException.class)
+        .satisfies(ex -> {
+          OrchestratorClientException oce = (OrchestratorClientException) ex;
+          assertThat(oce.status).isEqualTo("ERROR");
+          assertThat(oce.errCode).isEqualTo("INIT_AUTH_ERROR");
+          assertThat(oce.getMessage()).isEqualTo("initAuth returned ERROR");
+          assertThat(oce.timestamp).isNotNull();
+        });
+
+    verify(client).initAuth(null);
+    verifyNoMoreInteractions(client);
+  }
+
 }

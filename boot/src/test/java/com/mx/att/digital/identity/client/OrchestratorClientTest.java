@@ -3,11 +3,16 @@ package com.mx.att.digital.identity.client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mx.att.digital.identity.model.ApiResponse;
+import com.mx.att.digital.identity.model.InitAuthData;
+import com.mx.att.digital.identity.model.InitAuthRequest;
 import com.mx.att.digital.identity.model.MdnValidateData;
 import com.mx.att.digital.identity.model.MdnValidateRequest;
 import com.mx.att.digital.identity.model.OtpRequest;
 import com.mx.att.digital.identity.model.OtpRequestData;
 import com.mx.att.digital.identity.model.OtpValidateRequest;
+import com.mx.att.digital.identity.model.SessionInitLinesData;
+import com.mx.att.digital.identity.model.SessionInitLinesRequest;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +31,8 @@ import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -228,4 +235,70 @@ class OrchestratorClientTest {
     verify(lambdaClient).invoke(captor.capture());
     assertThat(captor.getValue().logType()).isEqualTo(LogType.NONE);
   }
+
+  @Test
+  void sessionInitLines_success_returns_parsed_response_andPayloadContainsOperation() throws Exception {
+    ObjectMapper realMapper = new ObjectMapper();
+    when(objectMapper.writeValueAsString(any()))
+        .thenAnswer(inv -> realMapper.writeValueAsString(inv.getArgument(0)));
+
+
+    InvokeResponse response = InvokeResponse.builder()
+        .statusCode(200)
+        .payload(SdkBytes.fromString("{\"status\":\"OK\"}", StandardCharsets.UTF_8))
+        .build();
+
+    ArgumentCaptor<InvokeRequest> captor = ArgumentCaptor.forClass(InvokeRequest.class);
+    when(lambdaClient.invoke(captor.capture())).thenReturn(response);
+
+    ApiResponse<SessionInitLinesData> expected =
+        new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
+
+    when(objectMapper.readValue(
+        anyString(),
+        org.mockito.ArgumentMatchers.<TypeReference<ApiResponse<SessionInitLinesData>>>any()
+    )).thenReturn(expected);
+
+    SessionInitLinesRequest req = new SessionInitLinesRequest(null, null, null, null);
+
+    ApiResponse<SessionInitLinesData> out = client.sessionInitLines(req);
+
+    assertThat(out).isSameAs(expected);
+
+    String sentPayload = captor.getValue().payload().asUtf8String();
+    assertThat(sentPayload).contains("\"operation\":\"sessionInitLines\"");
+  }
+
+  @Test
+  void initAuth_success_returns_parsed_response_andPayloadContainsOperation() throws Exception {
+    ObjectMapper realMapper = new ObjectMapper();
+    when(objectMapper.writeValueAsString(any()))
+        .thenAnswer(inv -> realMapper.writeValueAsString(inv.getArgument(0)));
+
+    InvokeResponse response = InvokeResponse.builder()
+        .statusCode(200)
+        .payload(SdkBytes.fromString("{\"status\":\"OK\"}", StandardCharsets.UTF_8))
+        .build();
+
+    ArgumentCaptor<InvokeRequest> captor = ArgumentCaptor.forClass(InvokeRequest.class);
+    when(lambdaClient.invoke(captor.capture())).thenReturn(response);
+
+    ApiResponse<InitAuthData> expected =
+        new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
+
+    when(objectMapper.readValue(
+        anyString(),
+        org.mockito.ArgumentMatchers.<TypeReference<ApiResponse<InitAuthData>>>any()
+    )).thenReturn(expected);
+
+    InitAuthRequest req = new InitAuthRequest(null, null, null, null, null, null, null);
+
+    ApiResponse<InitAuthData> out = client.initAuth(req);
+
+    assertThat(out).isSameAs(expected);
+
+    String sentPayload = captor.getValue().payload().asUtf8String();
+    assertThat(sentPayload).contains("\"operation\":\"initAuth\"");
+  }
+
 }

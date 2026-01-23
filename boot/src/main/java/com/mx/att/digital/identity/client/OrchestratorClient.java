@@ -68,6 +68,15 @@ public class OrchestratorClient {
     return invoke("otpForward", req, new TypeReference<>() {});
   }
 
+  public ApiResponse<SessionInitLinesData> sessionInitLines(SessionInitLinesRequest req) {
+    return invoke("sessionInitLines", req, new TypeReference<>() {});
+  }
+
+  public ApiResponse<InitAuthData> initAuth(InitAuthRequest req) {
+    return invoke("initAuth", req, new TypeReference<>() {});
+  }
+
+
   
 
   private <Q, R> ApiResponse<R> invoke(
