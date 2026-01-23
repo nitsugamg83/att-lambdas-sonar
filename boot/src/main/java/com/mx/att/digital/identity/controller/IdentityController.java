@@ -18,17 +18,12 @@ import com.mx.att.digital.identity.model.SessionInitData;
 import com.mx.att.digital.identity.model.SessionInitLinesData;
 import com.mx.att.digital.identity.model.SessionInitLinesRequest;
 import com.mx.att.digital.identity.model.SessionInitRequest;
-import com.mx.att.digital.identity.model.ValidateCustomerData;
 import com.mx.att.digital.identity.service.IdentityService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import com.mx.att.digital.identity.model.ValidateCustomerRequest;
-import com.mx.att.digital.identity.model.ApprovalRequest;
-import com.mx.att.digital.identity.model.AprovalResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,15 +163,6 @@ public class IdentityController {
     return ResponseEntity.ok(service.otpForward(req));
   }
 
- /* ===================== NUEVOS SERVICIOS ===================== */
-
-  @Operation(
-      summary = "Validate Customer",
-      description = "Valida información del cliente.",
-      responses = {
-          @io.swagger.v3.oas.annotations.responses.ApiResponse(
-              responseCode = "200",
-              description = "Cliente validado",
   @Operation(
       summary = "Session Init Lines ",
       description = "Inicializa una nueva sesion biometrica cuaneo el usuario alcanza el portal web de identidad",
@@ -193,38 +179,6 @@ public class IdentityController {
   )
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
-      content = @Content(schema = @Schema(implementation = ValidateCustomerRequest.class))
-  )
- @PostMapping(path = "/validateCustomer", consumes = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<ApiResponse<ValidateCustomerData>> validateCustomer(
-    @Valid @RequestBody ValidateCustomerRequest req) {
-  return ResponseEntity.ok(service.validateCustomer(req));
-}
-
-  @Operation(
-      summary = "Approval",
-      description = "Servicio de aprobación.",
-      responses = {
-          @io.swagger.v3.oas.annotations.responses.ApiResponse(
-              responseCode = "200",
-              description = "Aprobación procesada",
-              content = @Content(schema = @Schema(implementation = ApiResponse.class))
-          ),
-          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud inválida"),
-          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autorizado"),
-          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Error interno")
-      }
-  )
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      required = true,
-      content = @Content(schema = @Schema(implementation = ApprovalRequest.class))
-  )
- @PostMapping(path = "/approval", consumes = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<ApiResponse<AprovalResponse>> approval(
-    @Valid @RequestBody ApprovalRequest req) {
-    return ResponseEntity.ok(service.approvalRequest(req));
-}
-
       content = @Content(schema = @Schema(implementation = SessionInitLinesRequest.class))
   )
   @PostMapping(path = "/session/initLines", consumes = MediaType.APPLICATION_JSON_VALUE)

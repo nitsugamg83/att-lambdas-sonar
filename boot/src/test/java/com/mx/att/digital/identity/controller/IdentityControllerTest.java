@@ -137,44 +137,6 @@ class IdentityControllerTest {
       verifyNoMoreInteractions(service);
     }
   }
-
-  @Nested
-@DisplayName("POST /validateCustomer")
-class ValidateCustomerEndpoint {
-    @Test
-    @DisplayName("200 OK e invoca service.validateCustomer")
-    void validateCustomer_ok_invoca_service() throws Exception {
-        when(service.validateCustomer(ArgumentMatchers.any(ValidateCustomerRequest.class)))
-                .thenReturn(null);
-
-        mvc.perform(post("/validateCustomer")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isOk());
-
-        verify(service, times(1)).validateCustomer(ArgumentMatchers.any(ValidateCustomerRequest.class));
-        verifyNoMoreInteractions(service);
-    }
-}
-
-@Nested
-@DisplayName("POST /approval")
-class ApprovalEndpoint {
-    @Test
-    @DisplayName("200 OK e invoca service.approvalRequest")
-    void approval_ok_invoca_service() throws Exception {
-        when(service.approvalRequest(ArgumentMatchers.any(ApprovalRequest.class)))
-                .thenReturn(null);
-
-        mvc.perform(post("/approval")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isOk());
-
-        verify(service, times(1)).approvalRequest(ArgumentMatchers.any(ApprovalRequest.class));
-        verifyNoMoreInteractions(service);
-    }
-}
   @Nested
   @DisplayName("POST /session/initLines")
   class SessionInitLinesEndpoint {
