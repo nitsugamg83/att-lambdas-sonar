@@ -3,6 +3,8 @@ package com.mx.att.digital.identity.client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mx.att.digital.identity.model.*;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,6 +70,26 @@ public class OrchestratorClient {
     return invoke("otpForward", req, new TypeReference<>() {});
   }
 
+// =======================
+// NUEVO SERVICE AGREGADO
+// =======================
+public ApiResponse<ValidateCustomerData> validateCustomer(ValidateCustomerRequest req) {
+    return invoke(
+        "validateCustomer",
+        req,
+        new TypeReference<ApiResponse<ValidateCustomerData>>() {}
+    );
+}
+
+public ApiResponse<ApprovalRequest> approval(
+        ApprovalRequest req) {
+
+    return invoke(
+        "approval",
+        req,
+        new TypeReference<ApiResponse<ApprovalRequest>>() {}
+    );
+}
   
 
   private <Q, R> ApiResponse<R> invoke(
@@ -164,5 +186,15 @@ public class OrchestratorClient {
   static class OrchestratorClientException extends RuntimeException {
     OrchestratorClientException(String message) { super(message); }
     OrchestratorClientException(String message, Throwable cause) { super(message, cause); }
+  }
+
+  public ApiResponse<ValidateCustomerData> validateCustomerRequest(ValidateCustomerRequest req) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'validateCustomerRequest'");
+  }
+
+  public ApiResponse<AprovalResponse> approvalRequest(ApprovalRequest req) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'approvalRequest'");
   }
 }

@@ -33,9 +33,7 @@ public class IdentityServiceImpl implements IdentityService {
             log.info("[IdentityService] sessionInit uuid={}", safe(req == null ? null : req.uuid()));
         }
         ApiResponse<SessionInitData> result = client.sessionInit(req);
-
         throwIfError(result, "sessionInit returned ERROR", "SESSION_INIT_ERROR");
-        
         return result;
     }
 
@@ -46,15 +44,10 @@ public class IdentityServiceImpl implements IdentityService {
         if (log.isInfoEnabled()) {
             log.info("[IdentityService] mdnValidate uuid={} msisdn={}",
                 safe(req == null ? null : req.uuid()),
-                safe(req == null ? null : req.msisdn())
-            );
+                safe(req == null ? null : req.msisdn()));
         }
         ApiResponse<MdnValidateData> result = client.mdnValidate(req);
-
-        log.info("result=\"{}\"", result);
-
         throwIfError(result, "mdnValidate returned ERROR", "MDN_VALIDATE_ERROR");
-        
         return result;
     }
 
@@ -66,9 +59,7 @@ public class IdentityServiceImpl implements IdentityService {
             log.info("[IdentityService] otpRequest uuid={}", safe(req == null ? null : req.uuid()));
         }
         ApiResponse<OtpRequestData> result = client.otpRequest(req);
-
         throwIfError(result, "otpRequest returned ERROR", "OTP_REQUEST_ERROR");
-        
         return result;
     }
 
@@ -80,34 +71,8 @@ public class IdentityServiceImpl implements IdentityService {
             log.info("[IdentityService] otpValidate uuid={}", safe(req == null ? null : req.uuid()));
         }
         ApiResponse<OtpValidateData> result = client.otpValidate(req);
-
         throwIfError(result, "otpValidate returned ERROR", "OTP_VALIDATE_ERROR");
-        
         return result;
-    }
-
-
-    /**
-     * Lanza OrchestratorClientException si result.status == ERROR.
-     * Los campos del error se toman del ApiResponse result.
-     */
-    private void throwIfError(ApiResponse<?> result, String defaultMsg, String errorCode) {
-        String status = (result == null) ? null : result.status();
-
-        if ("ERROR".equalsIgnoreCase(status)) {
-            String msg = (result != null && result.message() != null && !result.message().isBlank())
-                    ? result.message()
-                    : defaultMsg;
-
-            String code = (errorCode != null && !errorCode.isBlank())
-                    ? errorCode
-                    : "ORCHESTRATOR_CLIENT_ERROR";
-
-            // timestamp nuevo (si no viene en result)
-            OffsetDateTime ts = OffsetDateTime.now();
-
-            throw new OrchestratorClientException(msg, status, code, ts);
-        }
     }
 
     @Override
@@ -118,13 +83,62 @@ public class IdentityServiceImpl implements IdentityService {
             log.info("[IdentityService] otpForward uuid={}", safe(req == null ? null : req.uuid()));
         }
         ApiResponse<OtpForwardData> result = client.otpForward(req);
-
         throwIfError(result, "otpForward returned ERROR", "OTP_FORWARD_ERROR");
-        
         return result;
+    }
+
+    @CircuitBreaker(name = "orchestrator")
+    @Retry(name = "orchestrator")
+    public ApiResponse<ValidateCustomerData> validateCustomerRequest(ValidateCustomerRequest req) {
+        if (log.isInfoEnabled()) {
+            log.info("[IdentityService] validateCustomerRequest uuid={}", safe(req == null ? null : req.uuid()));
+        }
+        ApiResponse<ValidateCustomerData> result = client.validateCustomerRequest(req);
+        throwIfError(result, "ValidateCustomerData returned ERROR", "VALIDATE_CUSTOMER_ERROR");
+        return result;
+    }
+
+    @Override
+    @CircuitBreaker(name = "orchestrator")
+    @Retry(name = "orchestrator")
+    public ApiResponse<AprovalResponse> approvalRequest (ApprovalRequest req) {
+        if (log.isInfoEnabled()) {
+            log.info("[IdentityService] approvalRequest uuid={}", safe(req == null ? null : req.uuid()));
+        }
+        ApiResponse<AprovalResponse> result = client.approvalRequest(req);
+        throwIfError(result, "ApprovalRequest returned ERROR", "APPROVAL_ERROR");
+        return result;
+    }
+
+    /**
+     * Lanza OrchestratorClientException si result.status == ERROR.
+     */
+    private void throwIfError(ApiResponse<?> result, String defaultMsg, String errorCode) {
+        String status = (result == null) ? null : result.status();
+        if ("ERROR".equalsIgnoreCase(status)) {
+            String msg = (result != null && result.message() != null && !result.message().isBlank())
+                    ? result.message()
+                    : defaultMsg;
+            String code = (errorCode != null && !errorCode.isBlank())
+                    ? errorCode
+                    : "ORCHESTRATOR_CLIENT_ERROR";
+            OffsetDateTime ts = OffsetDateTime.now();
+            throw new OrchestratorClientException(msg, status, code, ts);
+        }
     }
 
     private String safe(String v) {
         return Objects.toString(v, "-");
+    }
+
+    @Override
+    public ApiResponse<ValidateCustomerData> validateCustomer(
+            ValidateCustomerRequest req) {
+        if (log.isInfoEnabled()) {
+            log.info("[IdentityService] ValidateCustomerRequest uuid={}", safe(req == null ? null : req.uuid()));
+        }
+        ApiResponse<ValidateCustomerData> result = client.validateCustomerRequest(req);
+        throwIfError(result, "ApprovalRequest returned ERROR", "APPROVAL_ERROR");
+        return result;
     }
 }

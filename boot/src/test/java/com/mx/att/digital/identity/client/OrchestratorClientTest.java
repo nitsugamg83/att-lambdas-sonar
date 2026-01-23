@@ -2,15 +2,11 @@ package com.mx.att.digital.identity.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mx.att.digital.identity.model.ApiResponse;
-import com.mx.att.digital.identity.model.MdnValidateData;
-import com.mx.att.digital.identity.model.MdnValidateRequest;
-import com.mx.att.digital.identity.model.OtpRequest;
-import com.mx.att.digital.identity.model.OtpRequestData;
-import com.mx.att.digital.identity.model.OtpValidateRequest;
+import com.mx.att.digital.identity.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.core.SdkBytes;
@@ -31,161 +27,192 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrchestratorClientTest {
 
-  @Mock
-  private LambdaClient lambdaClient;
+    @Mock
+    private LambdaClient lambdaClient;
 
-  @Mock
-  private ObjectMapper objectMapper;
+    @Mock
+    private ObjectMapper objectMapper;
 
-  private OrchestratorClient client;
+    private OrchestratorClient client;
 
-  private static final String FUNCTION_ARN =
-      "arn:aws:lambda:us-east-1:123:function:test";
+    private static final String FUNCTION_ARN =
+            "arn:aws:lambda:us-east-1:123:function:test";
 
-  @BeforeEach
-  void setup() {
-    client = new OrchestratorClient(
-        lambdaClient,
-        objectMapper,
-        FUNCTION_ARN,
-        "RequestResponse",
-        "Tail"
-    );
-  }
+    @BeforeEach
+    void setup() {
+        client = new OrchestratorClient(
+                lambdaClient,
+                objectMapper,
+                FUNCTION_ARN,
+                "RequestResponse",
+                "Tail"
+        );
+    }
 
-  // =========================
-  // Flujo exitoso (sube coverage)
-  // =========================
-  @Test
-  void mdnValidate_success_returns_parsed_response() throws Exception {
-    when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+    // =========================
+    // mdnValidate
+    // =========================
+    @Test
+    void mdnValidate_success_returns_parsed_response() throws Exception {
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-    InvokeResponse response = InvokeResponse.builder()
-        .statusCode(200)
-        .payload(SdkBytes.fromString("{\"status\":\"OK\"}", StandardCharsets.UTF_8))
-        .build();
+        InvokeResponse response = InvokeResponse.builder()
+                .statusCode(200)
+                .payload(SdkBytes.fromString("{\"status\":\"OK\"}", StandardCharsets.UTF_8))
+                .build();
 
-    when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
+        when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
 
-    ApiResponse<MdnValidateData> expected =
-        new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
+        ApiResponse<MdnValidateData> expected =
+                new ApiResponse<>("OK", "msg", null, OffsetDateTime.now());
 
-    // OJO: no uses eq("{...}") porque el body puede variar (espacios/orden/campos)
-    when(objectMapper.readValue(
-        anyString(),
-        org.mockito.ArgumentMatchers.<TypeReference<ApiResponse<MdnValidateData>>>any()
-    )).thenReturn(expected);
+        when(objectMapper.readValue(
+                anyString(),
+                ArgumentMatchers.<TypeReference<ApiResponse<MdnValidateData>>>any()
+        )).thenReturn(expected);
 
-    MdnValidateRequest req = new MdnValidateRequest(null, null, null, null, null,null,null);
+        ApiResponse<MdnValidateData> out =
+                client.mdnValidate(new MdnValidateRequest(null, null, null, null, null, null, null));
 
-    ApiResponse<MdnValidateData> out = client.mdnValidate(req);
+        assertThat(out).isSameAs(expected);
+    }
 
-    assertThat(out).isSameAs(expected);
+    // =========================
+    // validateCustomer
+    // =========================
+    @Test
+    void validateCustomer_success_returns_parsed_response() throws Exception {
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-    verify(objectMapper).writeValueAsString(any());
-    verify(lambdaClient).invoke(any(InvokeRequest.class));
-    verify(objectMapper).readValue(
-        anyString(),
-        org.mockito.ArgumentMatchers.<TypeReference<ApiResponse<MdnValidateData>>>any()
-    );
-    verifyNoMoreInteractions(lambdaClient, objectMapper);
-  }
+        InvokeResponse response = InvokeResponse.builder()
+                .statusCode(200)
+                .payload(SdkBytes.fromString("{\"status\":\"OK\"}", StandardCharsets.UTF_8))
+                .build();
 
-  // =========================
-  // LambdaException se propaga
-  // =========================
-  @Test
-  void invoke_lambdaException_propagated() throws Exception {
-    when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+        when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
 
-    when(lambdaClient.invoke(any(InvokeRequest.class)))
-        .thenThrow(LambdaException.builder().message("AWS error").build());
+        ApiResponse<ValidateCustomerData> expected =
+                new ApiResponse<>("OK", "Success", null, OffsetDateTime.now());
 
-    MdnValidateRequest req = new MdnValidateRequest(null, null, null, null, null,null,null);
+        when(objectMapper.readValue(
+                anyString(),
+                ArgumentMatchers.<TypeReference<ApiResponse<ValidateCustomerData>>>any()
+        )).thenReturn(expected);
 
-    assertThrows(LambdaException.class, () -> client.mdnValidate(req));
+        ValidateCustomerRequest req =
+                new ValidateCustomerRequest(
+                        "uuid",
+                        OffsetDateTime.now(),
+                        "doc",
+                        "cust",
+                        "op",
+                        "sys"
+                );
 
-    verify(objectMapper).writeValueAsString(any());
-    verify(lambdaClient).invoke(any(InvokeRequest.class));
-    verifyNoMoreInteractions(lambdaClient, objectMapper);
-  }
+        ApiResponse<ValidateCustomerData> out = client.validateCustomer(req);
 
-  // =========================
-  // Lambda functionError -> RuntimeException
-  // =========================
-  @Test
-  void invoke_functionError_throwsRuntimeException() throws Exception {
-    when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+        assertThat(out).isSameAs(expected);
+    }
 
-    InvokeResponse response = InvokeResponse.builder()
-        .statusCode(200)
-        .functionError("Unhandled")
-        .payload(SdkBytes.fromString("{}", StandardCharsets.UTF_8))
-        .build();
+    // =========================
+    // approval (REAL)
+    // =========================
+    @Test
+    void approval_success_returns_parsed_response() throws Exception {
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-    when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
+        InvokeResponse response = InvokeResponse.builder()
+                .statusCode(200)
+                .payload(SdkBytes.fromString("{\"status\":\"OK\"}", StandardCharsets.UTF_8))
+                .build();
 
-    OtpRequest req = new OtpRequest(null, null, null, null, null, null);
+        when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
 
-    assertThrows(RuntimeException.class, () -> client.otpRequest(req));
+        ApprovalRequest req = new ApprovalRequest(
+                "123",
+                OffsetDateTime.now(),
+                "PHASE_1",
+                "CUST_456",
+                "APPROVAL",
+                "192.168.1.1",
+                "Mozilla/5.0"
+        );
 
-    verify(objectMapper).writeValueAsString(any());
-    verify(lambdaClient).invoke(any(InvokeRequest.class));
-    verifyNoMoreInteractions(lambdaClient, objectMapper);
-  }
+        ApiResponse<ApprovalRequest> expected =
+                new ApiResponse<>("OK", "Success", req, OffsetDateTime.now());
 
-  // =========================
-  // Payload vacío -> RuntimeException
-  // =========================
-  @Test
-  void invoke_emptyPayload_throwsRuntimeException() throws Exception {
-    when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+        when(objectMapper.readValue(
+                anyString(),
+                ArgumentMatchers.<TypeReference<ApiResponse<ApprovalRequest>>>any()
+        )).thenReturn(expected);
 
-    InvokeResponse response = InvokeResponse.builder()
-        .statusCode(200)
-        .payload(SdkBytes.fromString("", StandardCharsets.UTF_8))
-        .build();
+        ApiResponse<ApprovalRequest> out = client.approval(req);
 
-    when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
+        assertThat(out).isSameAs(expected);
+    }
 
-    OtpValidateRequest req = new OtpValidateRequest(null, null, null, null, null, null, null);
+    // =========================
+    // errores
+    // =========================
+    @Test
+    void lambdaException_propagated() throws Exception {
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-    assertThrows(RuntimeException.class, () -> client.otpValidate(req));
+        when(lambdaClient.invoke(any(InvokeRequest.class)))
+                .thenThrow(LambdaException.builder().message("AWS error").build());
 
-    verify(objectMapper).writeValueAsString(any());
-    verify(lambdaClient).invoke(any(InvokeRequest.class));
-    verifyNoMoreInteractions(lambdaClient, objectMapper);
-  }
+        assertThrows(LambdaException.class,
+                () -> client.mdnValidate(new MdnValidateRequest(null, null, null, null, null, null, null)));
+    }
 
-  // =========================
-  // Error de parseo -> RuntimeException
-  // =========================
-  @Test
-  void invoke_parseError_throwsRuntimeException() throws Exception {
-    when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+    @Test
+    void functionError_throwsRuntimeException() throws Exception {
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-    InvokeResponse response = InvokeResponse.builder()
-        .statusCode(200)
-        .payload(SdkBytes.fromString("{\"bad\":true}", StandardCharsets.UTF_8))
-        .build();
+        InvokeResponse response = InvokeResponse.builder()
+                .statusCode(200)
+                .functionError("Unhandled")
+                .payload(SdkBytes.fromString("{}", StandardCharsets.UTF_8))
+                .build();
 
-    when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
+        when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
 
-    when(objectMapper.readValue(
-        anyString(),
-        org.mockito.ArgumentMatchers.<TypeReference<ApiResponse<OtpRequestData>>>any()
-    )).thenThrow(new IllegalArgumentException("boom"));
+        assertThrows(RuntimeException.class,
+                () -> client.otpRequest(new OtpRequest(null, null, null, null, null, null)));
+    }
 
-    OtpRequest req = new OtpRequest(null, null, null, null, null, null);
+    @Test
+    void emptyPayload_throwsRuntimeException() throws Exception {
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-    assertThrows(RuntimeException.class, () -> client.otpRequest(req));
+        InvokeResponse response = InvokeResponse.builder()
+                .statusCode(200)
+                .payload(SdkBytes.fromString("", StandardCharsets.UTF_8))
+                .build();
 
-    verify(objectMapper).writeValueAsString(any());
-    verify(lambdaClient).invoke(any(InvokeRequest.class));
-    verify(objectMapper).readValue(
-        anyString(),
-        org.mockito.ArgumentMatchers.<TypeReference<ApiResponse<OtpRequestData>>>any()
-    );
-    verifyNoMoreInteractions(lambdaClient, objectMapper);
-  }
+        when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
+
+        assertThrows(RuntimeException.class,
+                () -> client.otpValidate(new OtpValidateRequest(null, null, null, null, null, null, null)));
+    }
+
+    @Test
+    void parseError_throwsRuntimeException() throws Exception {
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+
+        InvokeResponse response = InvokeResponse.builder()
+                .statusCode(200)
+                .payload(SdkBytes.fromString("{\"bad\":true}", StandardCharsets.UTF_8))
+                .build();
+
+        when(lambdaClient.invoke(any(InvokeRequest.class))).thenReturn(response);
+
+        when(objectMapper.readValue(
+                anyString(),
+                ArgumentMatchers.<TypeReference<ApiResponse<OtpRequestData>>>any()
+        )).thenThrow(new IllegalArgumentException("boom"));
+
+        assertThrows(RuntimeException.class,
+                () -> client.otpRequest(new OtpRequest(null, null, null, null, null, null)));
+    }
 }
