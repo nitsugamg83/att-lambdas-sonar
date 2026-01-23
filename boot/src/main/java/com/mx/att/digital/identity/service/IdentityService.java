@@ -13,6 +13,12 @@ public interface IdentityService {
     ApiResponse<OtpValidateData> otpValidate(OtpValidateRequest req);
 
     ApiResponse<OtpForwardData> otpForward(OtpForwardRequest req);
+    
+    ApiResponse<ValidateCustomerData> validateCustomer(ValidateCustomerRequest req);
+
+    ApiResponse<AprovalResponse> approvalRequest(ApprovalRequest req);
+
+    
 
     ApiResponse<SessionInitLinesData> sessionInitLines(SessionInitLinesRequest req);
 
