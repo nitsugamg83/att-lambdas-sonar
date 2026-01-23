@@ -1,6 +1,7 @@
 package com.mx.att.digital.identity.exception;
 
 import com.mx.att.digital.identity.model.ErrorResponse;
+import com.mx.att.digital.identity.client.OrchestratorClientException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,18 +60,7 @@ class GlobalExceptionHandlerTest {
     void handleValidation_withErrors() {
         BeanPropertyBindingResult bindingResult =
                 new BeanPropertyBindingResult(new Object(), "request");
-
-        bindingResult.addError(
-                new FieldError(
-                        "request",
-                        "field",
-                        "invalid",
-                        false,
-                        new String[]{"NotNull"},
-                        null,
-                        "must not be null"
-                )
-        );
+        bindingResult.addError(new FieldError("request", "field", "must not be blank"));
 
         MethodArgumentNotValidException ex =
                 new MethodArgumentNotValidException(null, bindingResult);
@@ -97,8 +89,11 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleNotReadable() {
+        org.springframework.http.HttpInputMessage inputMessage =
+                org.mockito.Mockito.mock(org.springframework.http.HttpInputMessage.class);
+
         HttpMessageNotReadableException ex =
-                new HttpMessageNotReadableException("Malformed JSON");
+                new HttpMessageNotReadableException("Malformed JSON", inputMessage);
 
         ResponseEntity<ErrorResponse> response = handler.handleNotReadable(ex);
 
@@ -106,12 +101,13 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response.getBody());
     }
 
-    /* ===================== Missing parameter ===================== */
+
+    /* ===================== Missing Parameter ===================== */
 
     @Test
     void handleMissingParam() {
         MissingServletRequestParameterException ex =
-                new MissingServletRequestParameterException("id", "String");
+                new MissingServletRequestParameterException("param", "String");
 
         ResponseEntity<ErrorResponse> response = handler.handleMissingParam(ex);
 
@@ -165,5 +161,38 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
+    }
+
+    /* ===================== OrchestratorClientException (AGREGADOS) ===================== */
+
+    @Test
+    void handleOrchestratorClient_usesDefaults_whenFieldsMissingOrBlank() {
+        OrchestratorClientException ex = new OrchestratorClientException("   ", " ", " ", null);
+
+        ResponseEntity<ErrorResponse> response = handler.handleOrchestratorClient(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("ERROR", response.getBody().status());
+        assertEquals("Bad request", response.getBody().message());
+        assertEquals("ORCHESTRATOR_CLIENT_ERROR", response.getBody().errorCode());
+        assertNotNull(response.getBody().timestamp());
+        assertFalse(response.getBody().retryable());
+    }
+
+    @Test
+    void handleOrchestratorClient_usesProvidedFields() {
+        OffsetDateTime ts = OffsetDateTime.parse("2025-01-01T10:00:00Z");
+        OrchestratorClientException ex = new OrchestratorClientException("boom", "ERROR", "X1", ts);
+
+        ResponseEntity<ErrorResponse> response = handler.handleOrchestratorClient(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("ERROR", response.getBody().status());
+        assertEquals("boom", response.getBody().message());
+        assertEquals("X1", response.getBody().errorCode());
+        assertEquals(ts, response.getBody().timestamp());
+        assertFalse(response.getBody().retryable());
     }
 }

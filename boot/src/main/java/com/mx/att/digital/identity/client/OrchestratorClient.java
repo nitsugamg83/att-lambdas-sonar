@@ -90,6 +90,15 @@ public ApiResponse<ApprovalRequest> approval(
         new TypeReference<ApiResponse<ApprovalRequest>>() {}
     );
 }
+  public ApiResponse<SessionInitLinesData> sessionInitLines(SessionInitLinesRequest req) {
+    return invoke("sessionInitLines", req, new TypeReference<>() {});
+  }
+
+  public ApiResponse<InitAuthData> initAuth(InitAuthRequest req) {
+    return invoke("initAuth", req, new TypeReference<>() {});
+  }
+
+
   
 
   private <Q, R> ApiResponse<R> invoke(
@@ -141,8 +150,10 @@ public ApiResponse<ApprovalRequest> approval(
       Map<String, Object> payload = new HashMap<>();
       payload.put("operation", operation);
       payload.put("request", requestBody);
+      
       return mapper.writeValueAsString(payload);
     } catch (Exception ex) {
+
       throw new OrchestratorClientException(
           "No se pudo serializar payload para Lambda (op=" + operation + ", arn=" + functionArn + "): " + ex.getMessage(),
           ex

@@ -116,7 +116,7 @@ public class GlobalExceptionHandler {
         HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
 
         String body = ex.getResponseBodyAsString();
-        String detail = (body != null && !body.isBlank()) ? body : ex.getMessage();
+        String detail = !body.isBlank() ? body : ex.getMessage();
         String msg = "Upstream error (" + ex.getStatusCode().value() + "): " + detail;
 
         boolean retryable = ex.getStatusCode().is5xxServerError();

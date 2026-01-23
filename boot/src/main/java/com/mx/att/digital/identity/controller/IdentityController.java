@@ -1,7 +1,11 @@
 package com.mx.att.digital.identity.controller;
 
 import jakarta.validation.Valid;
+
+import com.mx.att.digital.identity.client.OrchestratorClient;
 import com.mx.att.digital.identity.model.ApiResponse;
+import com.mx.att.digital.identity.model.InitAuthData;
+import com.mx.att.digital.identity.model.InitAuthRequest;
 import com.mx.att.digital.identity.model.MdnValidateData;
 import com.mx.att.digital.identity.model.MdnValidateRequest;
 import com.mx.att.digital.identity.model.OtpForwardData;
@@ -11,6 +15,8 @@ import com.mx.att.digital.identity.model.OtpRequestData;
 import com.mx.att.digital.identity.model.OtpValidateData;
 import com.mx.att.digital.identity.model.OtpValidateRequest;
 import com.mx.att.digital.identity.model.SessionInitData;
+import com.mx.att.digital.identity.model.SessionInitLinesData;
+import com.mx.att.digital.identity.model.SessionInitLinesRequest;
 import com.mx.att.digital.identity.model.SessionInitRequest;
 import com.mx.att.digital.identity.model.ValidateCustomerData;
 import com.mx.att.digital.identity.service.IdentityService;
@@ -24,6 +30,8 @@ import com.mx.att.digital.identity.model.ValidateCustomerRequest;
 import com.mx.att.digital.identity.model.ApprovalRequest;
 import com.mx.att.digital.identity.model.AprovalResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +40,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class IdentityController {
+
+  private static final Logger log = LoggerFactory.getLogger(IdentityController.class);
+
 
   private final IdentityService service;
   public IdentityController(IdentityService service) { this.service = service; }
@@ -56,7 +67,10 @@ public class IdentityController {
   )
   @PostMapping(path = "/session/init", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ApiResponse<SessionInitData>> sessionInit(@Valid @RequestBody SessionInitRequest req) {
-    return ResponseEntity.ok(service.sessionInit(req));
+    log.info("Llamada a /session/init req{}",req);
+    ApiResponse<SessionInitData> response = service.sessionInit(req);
+    log.info("response en /session/init res{}",response);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(
@@ -81,6 +95,9 @@ public class IdentityController {
   public ResponseEntity<ApiResponse<MdnValidateData>> mdnValidate(@Valid @RequestBody MdnValidateRequest req) {
     return ResponseEntity.ok(service.mdnValidate(req));
   }
+
+
+  
 
   @Operation(
       summary = "Solicita OTP",
@@ -160,6 +177,13 @@ public class IdentityController {
           @io.swagger.v3.oas.annotations.responses.ApiResponse(
               responseCode = "200",
               description = "Cliente validado",
+  @Operation(
+      summary = "Session Init Lines ",
+      description = "Inicializa una nueva sesion biometrica cuaneo el usuario alcanza el portal web de identidad",
+      responses = {
+          @io.swagger.v3.oas.annotations.responses.ApiResponse(
+              responseCode = "200",
+              description = "Sesion inicializada",
               content = @Content(schema = @Schema(implementation = ApiResponse.class))
           ),
           @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud inválida"),
@@ -201,5 +225,34 @@ public ResponseEntity<ApiResponse<AprovalResponse>> approval(
     return ResponseEntity.ok(service.approvalRequest(req));
 }
 
+      content = @Content(schema = @Schema(implementation = SessionInitLinesRequest.class))
+  )
+  @PostMapping(path = "/session/initLines", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ApiResponse<SessionInitLinesData>> sessionInitLines(@Valid @RequestBody SessionInitLinesRequest req) {
+    return ResponseEntity.ok(service.sessionInitLines(req));
+  }
+
+  @Operation(
+    summary = "Init Auth",
+    description = "Inicializa el Incode webflow para el proceso de autenticación.",
+    responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Flujo inicializado",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud inválida"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autorizado"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Error interno")
+    }
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        required = true,
+        content = @Content(schema = @Schema(implementation = InitAuthRequest.class))
+    )
+    @PostMapping(path = "/initAuth", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<InitAuthData>> initAuth(@Valid @RequestBody InitAuthRequest req) {
+        return ResponseEntity.ok(service.initAuth(req));
+    }
 
 }

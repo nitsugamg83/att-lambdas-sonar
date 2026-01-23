@@ -122,7 +122,7 @@ public class IdentityServiceImpl implements IdentityService {
             String code = (errorCode != null && !errorCode.isBlank())
                     ? errorCode
                     : "ORCHESTRATOR_CLIENT_ERROR";
-            OffsetDateTime ts = OffsetDateTime.now();
+            OffsetDateTime ts = OffsetDateTime.now();            
             throw new OrchestratorClientException(msg, status, code, ts);
         }
     }
@@ -141,4 +141,38 @@ public class IdentityServiceImpl implements IdentityService {
         throwIfError(result, "ApprovalRequest returned ERROR", "APPROVAL_ERROR");
         return result;
     }
+
+    private String safe(String v) {
+        return Objects.toString(v, "-");
+    }
+
+    @Override
+    @CircuitBreaker(name = "orchestrator")
+    @Retry(name = "orchestrator")
+    public ApiResponse<SessionInitLinesData> sessionInitLines(SessionInitLinesRequest req) {
+        if (log.isInfoEnabled()) {
+            log.info("[IdentityService] sessionInit uuid={}", safe(req == null ? null : req.uuid()));
+        }
+        ApiResponse<SessionInitLinesData> result = client.sessionInitLines(req);
+
+        throwIfError(result, "sessionInitLines returned ERROR", "SESSION_INIT_LINES_ERROR");
+        
+        return result;
+    }
+
+    @Override
+    @CircuitBreaker(name = "orchestrator")
+    @Retry(name = "orchestrator")
+    public ApiResponse<InitAuthData> initAuth(InitAuthRequest req) {
+        if (log.isInfoEnabled()) {
+            log.info("[IdentityService] initAuth uuid={}", safe(req == null ? null : req.uuid()));
+        }
+
+        ApiResponse<InitAuthData> result = client.initAuth(req);
+
+        throwIfError(result, "initAuth returned ERROR", "INIT_AUTH_ERROR");
+
+        return result;
+    }
+
 }
