@@ -18,5 +18,8 @@ public interface IdentityService {
 
     ApiResponse<AprovalResponse> approvalRequest(ApprovalRequest req);
 
-    
+    ApiResponse<SessionInitLinesData> sessionInitLines(SessionInitLinesRequest req);
+
+    ApiResponse<InitAuthData> initAuth(InitAuthRequest req);
+
 }

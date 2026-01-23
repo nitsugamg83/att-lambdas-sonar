@@ -175,5 +175,40 @@ class ApprovalEndpoint {
         verifyNoMoreInteractions(service);
     }
 }
+  @Nested
+  @DisplayName("POST /session/initLines")
+  class SessionInitLinesEndpoint {
+    @Test
+    @DisplayName("200 OK e invoca service.sessionInitLines")
+    void sessionInitLines_ok_invoca_service() throws Exception {
+      when(service.sessionInitLines(ArgumentMatchers.any(SessionInitLinesRequest.class))).thenReturn(null);
+
+      mvc.perform(post("/session/initLines")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{}"))
+          .andExpect(status().isOk());
+
+      verify(service, times(1)).sessionInitLines(ArgumentMatchers.any(SessionInitLinesRequest.class));
+      verifyNoMoreInteractions(service);
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /initAuth")
+  class InitAuthEndpoint {
+    @Test
+    @DisplayName("200 OK e invoca service.initAuth")
+    void initAuth_ok_invoca_service() throws Exception {
+      when(service.initAuth(ArgumentMatchers.any(InitAuthRequest.class))).thenReturn(null);
+
+      mvc.perform(post("/initAuth")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{}"))
+          .andExpect(status().isOk());
+
+      verify(service, times(1)).initAuth(ArgumentMatchers.any(InitAuthRequest.class));
+      verifyNoMoreInteractions(service);
+    }
+  }
 
 }
