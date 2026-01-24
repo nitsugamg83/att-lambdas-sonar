@@ -22,4 +22,5 @@ public interface IdentityService {
 
     ApiResponse<InitAuthData> initAuth(InitAuthRequest req);
 
+   
 }

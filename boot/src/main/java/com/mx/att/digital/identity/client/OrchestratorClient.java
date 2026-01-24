@@ -97,7 +97,7 @@ public ApiResponse<SessionInitLinesData> sessionInitLines(SessionInitLinesReques
   public ApiResponse<InitAuthData> initAuth(InitAuthRequest req) {
     return invoke("initAuth", req, new TypeReference<>() {});
   }
-  
+   
 
   private <Q, R> ApiResponse<R> invoke(
       String operation,
